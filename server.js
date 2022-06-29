@@ -25,4 +25,30 @@ app.post("/uploadPDF", upload.single("file"), async (req, res) => {
    }
 });
 
+app.post("/uploadBLOB", async (req, res) => {
+   let payload = "";
+
+   req.on("data", async (chunk) => {
+      payload += chunk;
+      console.log(payload);
+   });
+
+   req.on("end", async () => {
+      console.log(payload);
+
+      try {
+         let data = await pdf(Buffer.from(payload, "binary"));
+
+         console.log("Number of pages: ", data.numpages);
+         console.log("PDF info: ", data.info);
+         console.log("File content: ", data.text);
+
+         return res.status(200).send("File content: " + data.text);
+      } catch (error) {
+         console.log("Error: ", error);
+         return res.status(500).send("Something is not right...");
+      }
+   });
+});
+
 app.listen(PORT, () => console.log(`Listenting on port ${PORT}`));
